@@ -33,12 +33,15 @@ private:
     QScrollArea *scrollArea = nullptr;
     QWidget *scrollAreaWidget = nullptr;
     //    AddEntry *A = nullptr;
-    void createCard(DesktopEntryContext context);
+    void createCard(const DesktopEntryContext &context);
     void resizeEvent(QResizeEvent *event) override;
     QStringList getDesktopEntryFilesNames();
     QVector<RowContext> parseDesktopEntry(const QString &file);
     void renderCards();
-
+    QPixmap getIcon(const DesktopEntryContext &cardContext);
     static constexpr int _iconIndex = 4;
+    static constexpr int _nameIndex = 0;
+
+    void deleteEntry(const QString &filename, const QString &name);
 };
 #endif // MAINWINDOW_H

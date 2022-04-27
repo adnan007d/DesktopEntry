@@ -42,19 +42,16 @@ void AddEntry::initStaticFields()
     rowContexts.emplaceBack(3, "Exec", "", "", true);
     rowContexts.emplaceBack(4, "Icon", "", "", true);
 
-    for (const auto &row : rowContexts)
-    {
-        qDebug() << row.index << " " << row.name << " " << row.helperText << " " << row.hasDialog << "\n";
-    }
 }
 
 void AddEntry::fileHandler(const QString &item, const int &index)
 {
+
     QString filename = QFileDialog ::getOpenFileName(
         this,
         "Select " + item + " file",
         QDir ::homePath(),
-        "All files (*.*)");
+        "All files (*)");
 
     if (!filename.isNull())
     {
@@ -86,7 +83,8 @@ void AddEntry::displayFields()
         // Checking if the field should have a file dialog to choose files
         if (field.hasDialog)
         {
-            QPushButton *fileDialogButton = new QPushButton(tr("?"), row);
+            QPushButton *fileDialogButton = new QPushButton(row);
+            fileDialogButton->setIcon(QIcon::fromTheme(field.name == "Icon" ? "image" : "folder"));
             hboxLayout->addWidget(fileDialogButton);
             connect(fileDialogButton, &QPushButton::clicked, [=]()
                     { fileHandler(field.name, field.index); });
@@ -160,7 +158,7 @@ void AddEntry::createDesktopEntryString()
 
     const QString _fileName = isEdit ? filename : getFileName(_name);
 
-    qDebug() << desktopEntryString << _fileName;
+//    qDebug() << desktopEntryString << _fileName;
 
     QFile file(_fileName);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -174,9 +172,9 @@ void AddEntry::createDesktopEntryString()
 
 QString AddEntry::getFileName(const QString &name)
 {
-    // const QString dirPath = QDir::homePath() + "/.local/share/applications/";
-    const QString dirPath = "";
-    qDebug() << dirPath;
+    const QString dirPath = QDir::homePath() + "/.local/share/applications/";
+    //    const QString dirPath = "";
+
     QString fileName = dirPath + "DN-" + name;
 
     if (!QFileInfo::exists(fileName + ".desktop"))

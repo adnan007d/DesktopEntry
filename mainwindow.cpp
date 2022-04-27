@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QSettings>
 #include <QImageReader>
+#include <QMessageBox>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -24,11 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     Init();
     renderCards();
+
 }
 
 void MainWindow::Init()
 {
-    qDebug() << "Inside";
     frame = new QFrame(this);
     scrollArea = new QScrollArea(frame);
 
@@ -62,20 +63,8 @@ void MainWindow::renderCards()
     }
 }
 
-MainWindow::~MainWindow()
+QPixmap MainWindow::getIcon(const DesktopEntryContext &cardContext)
 {
-    delete ui;
-}
-
-void MainWindow::createCard(DesktopEntryContext cardContext)
-{
-
-    QFrame *card = new QFrame(scrollAreaWidget);
-
-    card->setFrameStyle(QFrame::StyledPanel | QFrame::Shadow(QFrame::StyledPanel));
-
-    QVBoxLayout *cardLayout = new QVBoxLayout(card);
-
     const QString iconFile = cardContext.rowStructs.size() > 0 ? cardContext.rowStructs.at(_iconIndex).defaultText : "";
 
     QImageReader reader;
@@ -84,16 +73,57 @@ void MainWindow::createCard(DesktopEntryContext cardContext)
     if (QFileInfo::exists(iconFile))
         reader.setFileName(iconFile);
     else
-        reader.setFileName("/home/barty/Pictures/wallpaper/thighs.png");
+        reader.setFileName(":plus.png");
     QPixmap p = QPixmap();
     p.convertFromImage(reader.read());
+    return p;
+}
+
+void MainWindow::deleteEntry(const QString &filename, const QString &name)
+{
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Icon::Critical);
+    msgBox.setText("Do You Want To Delete " + name);
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+
+    int ret = msgBox.exec();
+
+    switch (ret)
+    {
+        case QMessageBox::Ok: QFile::remove(filename);
+        default: break;
+    }
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::createCard(const DesktopEntryContext &cardContext)
+{
+
+    QFrame *card = new QFrame(scrollAreaWidget);
+
+
+    card->setFrameStyle(QFrame::StyledPanel | QFrame::Shadow(QFrame::StyledPanel));
+
+    QVBoxLayout *cardLayout = new QVBoxLayout(card);
 
     QLabel *addIcon = new QLabel(card);
     addIcon->setFixedSize(125, 150);
 
+    const QPixmap p = getIcon(cardContext);
+
+    const QString name = cardContext.rowStructs.size() > 0 ? cardContext.rowStructs.at(_nameIndex).defaultText : "";
+
     addIcon->setPixmap(p.scaled(addIcon->width(), addIcon->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     QHBoxLayout *actionButtons = new QHBoxLayout();
+
+
 
     QPushButton *addButton = nullptr;
     if (cardContext.isEdit)
@@ -102,11 +132,14 @@ void MainWindow::createCard(DesktopEntryContext cardContext)
         addButton->setIcon(QIcon::fromTheme("edit"));
         connect(addButton, &QPushButton::clicked, [=]()
                 { AddEntry *A = new AddEntry(cardContext, this); A->exec(); renderCards(); });
+
         QPushButton *deleteButton = new QPushButton(card);
         deleteButton->setIcon(QIcon::fromTheme("delete"));
         connect(deleteButton, &QPushButton::clicked, [=]()
-                { qDebug() << "Delete Clicked"; renderCards(); });
+                { deleteEntry(cardContext.filename, name); renderCards(); });
+
         actionButtons->addWidget(deleteButton);
+
     }
     else
     {
@@ -116,6 +149,14 @@ void MainWindow::createCard(DesktopEntryContext cardContext)
                 { AddEntry *A = new AddEntry(this); A->exec(); renderCards(); });
     }
 
+
+    QLabel *nameLabel = new QLabel(name, card);
+
+    nameLabel->setAlignment(Qt::AlignCenter);
+    nameLabel->setWordWrap(true);
+    nameLabel->setFixedWidth(125);
+
+    cardLayout->addWidget(nameLabel);
     cardLayout->addWidget(addIcon);
     cardLayout->addLayout(actionButtons);
     actionButtons->insertWidget(0, addButton);
@@ -130,28 +171,30 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     const int width = this->width();
     const int height = this->height();
 
-    qDebug() << "Central Widget " << centralWidget()->width() << "x" << centralWidget()->height();
-    qDebug() << "MainWindow " << width << 'x' << height;
+//    qDebug() << "Central Widget " << centralWidget()->width() << "x" << centralWidget()->height();
+//    qDebug() << "MainWindow " << width << 'x' << height;
 
     frame->setGeometry(0, 0, width, height);
     scrollArea->setGeometry(0, 0, width, height);
 
-    qDebug() << "Frame " << frame->width() << 'x' << frame->height();
-    qDebug() << "ScrollArea " << scrollArea->width() << 'x' << scrollArea->height();
-    qDebug() << "ScrollAreaWidget " << scrollAreaWidget->width() << 'x' << scrollAreaWidget->height();
+//    qDebug() << "Frame " << frame->width() << 'x' << frame->height();
+//    qDebug() << "ScrollArea " << scrollArea->width() << 'x' << scrollArea->height();
+//    qDebug() << "ScrollAreaWidget " << scrollAreaWidget->width() << 'x' << scrollAreaWidget->height();
 
     //    qDebug() << scrollArea->width() << " " << scrollArea->height();
 }
 
 QStringList MainWindow::getDesktopEntryFilesNames()
 {
-    QDir dir = QDir("");
+//    QDir dir = QDir("");
+    QDir dir = QDir(QDir::homePath() + "/.local/share/applications/");
+
     dir.setNameFilters(QStringList() << "DN-*.desktop");
     QFileInfoList fileList = dir.entryInfoList(QDir ::Filter ::NoDotAndDotDot | QDir::Filter ::AllEntries);
     QStringList files;
     for (QFileInfo &f : fileList)
     {
-        qDebug() << f;
+//        qDebug() << f;
         if (f.isFile())
         {
             files.push_back(f.absoluteFilePath());
