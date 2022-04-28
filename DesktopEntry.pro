@@ -28,7 +28,8 @@ FORMS += \
 
 RESOURCES += \
     invert_plus.png \
-    plus.png
+    plus.png \
+    icon.jpg
 
 
 # Default rules for deployment.

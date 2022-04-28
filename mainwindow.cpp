@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     move(screen()->geometry().center() - frameGeometry().center());
 
+    setWindowIcon(QIcon(":icon.jpg"));
     Init();
     renderCards();
 
@@ -41,7 +42,7 @@ void MainWindow::Init()
 
     scrollArea->setWidget(scrollAreaWidget);
 
-    setWindowTitle(tr("Flow Layout"));
+    setWindowTitle(tr("Desktop Entry"));
 }
 
 void MainWindow::renderCards()
@@ -73,7 +74,7 @@ QPixmap MainWindow::getIcon(const DesktopEntryContext &cardContext)
     if (QFileInfo::exists(iconFile))
         reader.setFileName(iconFile);
     else
-        reader.setFileName(":plus.png");
+        reader.setFileName(":icon.jpg");
     QPixmap p = QPixmap();
     p.convertFromImage(reader.read());
     return p;
