@@ -37,7 +37,7 @@ void AddEntry::Init()
 void AddEntry::initStaticFields()
 {
     rowContexts.emplaceBack(0, "Name", "");
-    rowContexts.emplaceBack(1, "Type", "");
+    rowContexts.emplaceBack(1, "Type", "Application");
     rowContexts.emplaceBack(2, "Keywords", "", "( Seperated by ';' )");
     rowContexts.emplaceBack(3, "Exec", "", "", true);
     rowContexts.emplaceBack(4, "Icon", "", "", true);
